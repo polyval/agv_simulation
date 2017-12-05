@@ -65,7 +65,7 @@ public class TransporterModel extends Model implements Parameterizable{
 		idleTransporters = new ProcessQueue<>(this, "idle Vehicle Queue", true, false);
 		stations = new ProcessQueue<>(this, "Station Queue", true, false);
 		idleStations = new ProcessQueue<>(this, "idle Station Queue", true, false);
-		ts = new NVF_Transport_Strategy(this);
+		ts = new FIFO_Transport_Strategy(this);
 		tc = new TransportControl(this, "Dispatcher", true, ts);
 		storage_position = new double[] {10, 2};
 		
@@ -83,7 +83,7 @@ public class TransporterModel extends Model implements Parameterizable{
         
         m.connectToExperiment(experiment);
         // set trace
- 		experiment.tracePeriod(new TimeInstant(0), new TimeInstant(100));
+ 		experiment.tracePeriod(new TimeInstant(0), new TimeInstant(1000));
 
  		// now set the time this simulation should stop at 
  		// let him work 1500 Minutes

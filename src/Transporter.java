@@ -1,22 +1,27 @@
 import co.paralleluniverse.fibers.SuspendExecution;
 import desmoj.core.simulator.Model;
 import desmoj.core.simulator.SimProcess;
+import desmoj.core.simulator.TimeInstant;
+import desmoj.core.simulator.TimeOperations;
 import desmoj.core.simulator.TimeSpan;
 
 public class Transporter extends SimProcess{
 	
-	private double x;
-	private double y;
+	protected double x;
+	protected double y;
 	private double speed;
 	
 	private int capacity;
 	private int raw;
 	private int processed = 0;
+	protected State state = State.IDLE;
 	
-	private WorkStation task = null;
+	protected WorkStation task = null;
 	private TransporterModel myModel;
 	private TransportControl tc;
 	
+	private TimeInstant startTime;
+	protected boolean preempted = false;
 	private double travelDistance = 0.0;
 	
 	
@@ -37,11 +42,19 @@ public class Transporter extends SimProcess{
 	@Override
 	public void lifeCycle() throws SuspendExecution {
 		while (true) {
+			preempted = false;
 			// 去完成任务
 			if (task != null) {
+				startTime = presentTime();
 				System.out.println(getName() + " 开始前往 " + task.getName()+ " " + presentTime() + " " + x + " " + y);
 				driveToStation();
+				// 被抢占，更换任务
+				if (preempted) {
+					continue;
+				}
+				
 				System.out.println(getName() + " 到达 " + task.getName()+ " " + presentTime() + " " + x + " " + y);
+				
 				replenish();
 				//换件成功
 				task.endWait();
@@ -72,11 +85,25 @@ public class Transporter extends SimProcess{
 		this.y = y;
 	}
 	
+	public double[] getEnRoutePosition() {
+		if (task != null) {
+			double enRouteTime = TimeOperations.diff(startTime, presentTime()).getTimeAsDouble();
+			double dist = enRouteTime * speed;
+			double vx = (task.x - x) / getDistance(task);
+			double vy = (task.y - y) / getDistance(task);
+			return new double[] {x + dist * vx, y + dist * vy};
+		}
+		else {
+			return new double[] {x, y};
+		}
+	}
+	
 	public double getDistance(WorkStation station) {
 		return Helper.computeDist(x, y, station.x, station.y);
 	}
 	
 	private void reload() throws SuspendExecution {
+		state = State.UNAVAILABLE;
 		System.out.println(getName() + " 补料 " + presentTime());
 		hold(new TimeSpan(getReloadTime()));
 		setPosition(myModel.storage_position[0], myModel.storage_position[1]);
@@ -84,6 +111,7 @@ public class Transporter extends SimProcess{
 		processed = 0;
 		System.out.println(getName() + " 补料成功 " + presentTime() + " " + x + " " + y);
 		travelDistance += Helper.computeDist(x, y, myModel.storage_position[0], myModel.storage_position[1]);
+		state = State.IDLE;
 	}
 	
 	private double getReloadTime() {
@@ -91,17 +119,31 @@ public class Transporter extends SimProcess{
 	}
 	
 	private void driveToStation() throws SuspendExecution {
+		state = State.MOVING;
 		double distance = getDistance(task);
+		// preempted只有在这个时候会被外界改变
 		hold(new TimeSpan(distance / speed));
+		if (preempted) {
+			return;
+		}
+		
 		System.out.println(getName() + "行驶时间 " + distance / speed);
-		// 停在任务处
 		setPosition(task.x, task.y);
 		travelDistance += distance;
 	}
 	
 	private void replenish() throws SuspendExecution{
+		state = State.EXECUTING;
 		hold(new TimeSpan(myModel.getLoadingTime()));
 		raw--;
 		processed++;
+		state = State.IDLE;
+	}
+	
+	public enum State {
+		EXECUTING,
+		IDLE,
+		MOVING,
+		UNAVAILABLE
 	}
 }

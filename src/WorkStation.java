@@ -15,7 +15,7 @@ public class WorkStation extends SimProcess{
 	private TransporterModel myModel;
 	private TransportControl tc;
 	
-	private TimeInstant startWait;
+	private TimeInstant startWait = new TimeInstant(0.0);
 	private TimeInstant endWait;
 	
 	public WorkStation(Model owner, String name, boolean showInTrace, TransportControl tc,
@@ -50,6 +50,10 @@ public class WorkStation extends SimProcess{
 	
 	public void endWait() {
 		endWait = presentTime();
+	}
+	
+	public double getCurWaitTime() {
+		return TimeOperations.diff(startWait, presentTime()).getTimeAsDouble();
 	}
 	
 	public double getWaitTime() {

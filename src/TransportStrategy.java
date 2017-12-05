@@ -7,5 +7,5 @@ public interface TransportStrategy {
 	 * the algorithm of the strategy that finds the jobs for the transporters
 	 * and is used by transporter control.
 	 */
-	public void schedule(ProcessQueue<?> transporters, ProcessQueue<?> stations);
+	public void schedule(ProcessQueue transporters, ProcessQueue stations);
 }

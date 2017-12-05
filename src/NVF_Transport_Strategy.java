@@ -12,7 +12,7 @@ public class NVF_Transport_Strategy  extends ModelComponent implements Transport
 	}
 
 	@Override
-	public void schedule(ProcessQueue<?> transporters, ProcessQueue<?> stations) {
+	public void schedule(ProcessQueue transporters, ProcessQueue stations) {
 		// get the first job of the queue
 		WorkStation j = (WorkStation) stations.first();
 
@@ -21,10 +21,11 @@ public class NVF_Transport_Strategy  extends ModelComponent implements Transport
 
 		// while there's a job and a transporter
 		while ((t != null) && (j != null)) {
-			double curDis = t.getDistance(j);
-			for (int i = 1; i < stations.size(); i++) {
-				if (t.getDistance((WorkStation) stations.get(i)) < curDis) {
-					j = (WorkStation) stations.get(i);
+			// ÈÎÎñÇý¶¯
+			Transporter k;
+			for (int i = 1; i < transporters.size(); i++) {
+				if ((k = (Transporter) transporters.get(i)).getDistance(j) < t.getDistance(j)) {
+					t = k;
 				}
 			}
 			
