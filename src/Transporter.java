@@ -87,8 +87,7 @@ public class Transporter extends SimProcess{
 	
 	public double[] getEnRoutePosition() {
 		if (task != null) {
-			double enRouteTime = TimeOperations.diff(startTime, presentTime()).getTimeAsDouble();
-			double dist = enRouteTime * speed;
+			double dist = getEnRouteDis();
 			double vx = (task.x - x) / getDistance(task);
 			double vy = (task.y - y) / getDistance(task);
 			return new double[] {x + dist * vx, y + dist * vy};
@@ -102,6 +101,11 @@ public class Transporter extends SimProcess{
 		return Helper.computeDist(x, y, station.x, station.y);
 	}
 	
+	private double getEnRouteDis() {
+		double enRouteTime = TimeOperations.diff(startTime, presentTime()).getTimeAsDouble();
+		return enRouteTime * speed;
+	}
+	
 	private void reload() throws SuspendExecution {
 		state = State.UNAVAILABLE;
 		System.out.println(getName() + " 补料 " + presentTime());
@@ -110,7 +114,9 @@ public class Transporter extends SimProcess{
 		raw = capacity;
 		processed = 0;
 		System.out.println(getName() + " 补料成功 " + presentTime() + " " + x + " " + y);
-		travelDistance += Helper.computeDist(x, y, myModel.storage_position[0], myModel.storage_position[1]);
+		double dis = Helper.computeDist(x, y, myModel.storage_position[0], myModel.storage_position[1]);
+		travelDistance += dis;
+		myModel.totalTravelDistance += dis;
 		state = State.IDLE;
 	}
 	
@@ -124,12 +130,14 @@ public class Transporter extends SimProcess{
 		// preempted只有在这个时候会被外界改变
 		hold(new TimeSpan(distance / speed));
 		if (preempted) {
+			myModel.totalTravelDistance += getEnRouteDis();
 			return;
 		}
 		
 		System.out.println(getName() + "行驶时间 " + distance / speed);
 		setPosition(task.x, task.y);
 		travelDistance += distance;
+		myModel.totalTravelDistance += distance;
 	}
 	
 	private void replenish() throws SuspendExecution{

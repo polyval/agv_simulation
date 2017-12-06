@@ -21,6 +21,7 @@ public class TransporterModel extends Model implements Parameterizable{
 	protected double[] storage_position;
 	
 	protected Histogram waitTimeHistogram;
+	protected double totalTravelDistance = 0.0;
  	
 	public TransporterModel(Model owner, String name, boolean showInReport, boolean showInTrace) {
 		super(owner, name, showInReport, showInTrace);
@@ -65,7 +66,7 @@ public class TransporterModel extends Model implements Parameterizable{
 		idleTransporters = new ProcessQueue<>(this, "idle Vehicle Queue", true, false);
 		stations = new ProcessQueue<>(this, "Station Queue", true, false);
 		idleStations = new ProcessQueue<>(this, "idle Station Queue", true, false);
-		ts = new FIFO_Transport_Strategy(this);
+		ts = new STDPTP_Transport_Strategy(this);
 		tc = new TransportControl(this, "Dispatcher", true, ts);
 		storage_position = new double[] {10, 2};
 		
@@ -97,7 +98,7 @@ public class TransporterModel extends Model implements Parameterizable{
  		// ...
  		// ...
  		// <-- after reaching ending criteria, the main thread returns here
-
+ 		System.out.println(m.totalTravelDistance);
  		// print the report about the already existing reporters into the report file
  		experiment.report();
 

@@ -11,6 +11,7 @@ public class WorkStation extends SimProcess{
 	
 	protected double x;
 	protected double y;
+	protected boolean priority = false;
 
 	private TransporterModel myModel;
 	private TransportControl tc;
@@ -30,6 +31,7 @@ public class WorkStation extends SimProcess{
 	@Override
 	public void lifeCycle() throws SuspendExecution {
 		while (true) {
+			priority = false;
 			// 开始加工
 			hold(new TimeSpan(getProcessingTime()));	
 			myModel.idleStations.insert(this);
