@@ -18,11 +18,10 @@ public class NVFTP_Transport_Strategy  extends ModelComponent implements Transpo
 
 		// get the first transporter of the queue
 		Transporter t = (Transporter) transporters.first();
-
+		
 		// while there's a job and a transporter
 		while ((t != null) && (j != null)) {
-			
-			if (j.getCurWaitTime() > 45) {
+			if (j.getCurWaitTime() > 63) {
 				Transporter k;
 				for (int i = 1; i < transporters.size(); i++) {
 					if ((k = (Transporter) transporters.get(i)).getDistance(j) < t.getDistance(j)) {

@@ -17,7 +17,7 @@ public class STDPTP_Transport_Strategy  extends ModelComponent implements Transp
 		// 时间优先级
 		for (int i = 0; i < stations.size() && transporters.size() > 0; i++) {
 			WorkStation k;
-			if ((k = (WorkStation) stations.get(i)).getCurWaitTime() > myModel.waitTimeHistogram.getMean()) {
+			if ((k = (WorkStation) stations.get(i)).getCurWaitTime() > 80) {
 				k.priority = true;
 				Transporter m = (Transporter) transporters.first();
 				Transporter n;

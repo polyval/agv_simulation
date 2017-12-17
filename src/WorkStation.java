@@ -31,6 +31,8 @@ public class WorkStation extends SimProcess{
 	@Override
 	public void lifeCycle() throws SuspendExecution {
 		while (true) {
+			myModel.waitTimeHistogram.update(getWaitTime());
+			myModel.finishedTask++;
 			priority = false;
 			// 开始加工
 			hold(new TimeSpan(getProcessingTime()));	
@@ -40,8 +42,6 @@ public class WorkStation extends SimProcess{
 			tc.activate();
 			// 等待车辆通知换件成功
 			passivate();
-			
-			myModel.waitTimeHistogram.update(getWaitTime());
 		}
 	}
 	

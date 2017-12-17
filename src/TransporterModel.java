@@ -1,4 +1,11 @@
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import desmoj.core.simulator.Experiment;
 import desmoj.core.simulator.Model;
@@ -22,6 +29,7 @@ public class TransporterModel extends Model implements Parameterizable{
 	
 	protected Histogram waitTimeHistogram;
 	protected double totalTravelDistance = 0.0;
+	protected int finishedTask = 0;
  	
 	public TransporterModel(Model owner, String name, boolean showInReport, boolean showInTrace) {
 		super(owner, name, showInReport, showInTrace);
@@ -66,44 +74,84 @@ public class TransporterModel extends Model implements Parameterizable{
 		idleTransporters = new ProcessQueue<>(this, "idle Vehicle Queue", true, false);
 		stations = new ProcessQueue<>(this, "Station Queue", true, false);
 		idleStations = new ProcessQueue<>(this, "idle Station Queue", true, false);
-		ts = new STDPTP_Transport_Strategy(this);
 		tc = new TransportControl(this, "Dispatcher", true, ts);
 		storage_position = new double[] {10, 2};
 		
-		waitTimeHistogram = new Histogram(this, "等待时间", 0, 100, 25, true, false);
+		waitTimeHistogram = new Histogram(this, "等待时间", 0, 200, 25, true, false);
+	}
+	
+	public void setStrategy(TransportStrategy ts) {
+		this.ts = ts;
 	}
 	
 	public double getLoadingTime() {
 		return 10;
 	}
 	
-	public static void main(String[] args) {
-        Experiment.setReferenceUnit(java.util.concurrent.TimeUnit.SECONDS);
-        Experiment experiment = new Experiment("Transporter Model");
-        TransporterModel m = new TransporterModel(null, "TransporterModel", true, true);
+	public static void main(String[] args) throws ClassNotFoundException, NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         
-        m.connectToExperiment(experiment);
-        // set trace
- 		experiment.tracePeriod(new TimeInstant(0), new TimeInstant(1000));
+        Map<String, Class> strategy_map = new LinkedHashMap<>();
+        strategy_map.put("FIFO", Class.forName("FIFO_Transport_Strategy"));
+        strategy_map.put("NVF", Class.forName("NVF_Transport_Strategy"));
+        strategy_map.put("NVFTP", Class.forName("NVFTP_Transport_Strategy"));
+        strategy_map.put("STD", Class.forName("STD_Transport_Strategy"));
+        strategy_map.put("STDP", Class.forName("STDP_Transport_Strategy"));
+        strategy_map.put("STDPTP", Class.forName("STDPTP_Transport_Strategy"));
+        strategy_map.put("SAWM", Class.forName("SAWM_Transport_Strategy"));
+        strategy_map.put("SAWMP", Class.forName("SAWMP_Transport_Strategy"));
+        
+        List<Double> avgWaitingTime = new ArrayList<>();
+        List<Double> maxWaitingTime = new ArrayList<>();
+        List<Double> distance = new ArrayList<>();
+        List<Integer> tasks = new ArrayList<>();
+        		
+        
+        for (String key : strategy_map.keySet()) {
+        	Experiment.setReferenceUnit(java.util.concurrent.TimeUnit.SECONDS);
+        	Experiment experiment = new Experiment("Transporter Model");
+        	TransporterModel m = new TransporterModel(null, "TransporterModel", true, true);
+        	Class<?> cl = strategy_map.get(key);
+        	Constructor<?> cons = cl.getConstructor(new Class[] {Model.class});
+        	TransportStrategy ts = (TransportStrategy) cons.newInstance(m);
+        	
+            m.setStrategy(ts);
+            
+            m.connectToExperiment(experiment);
+            // set trace
+     		experiment.tracePeriod(new TimeInstant(0), new TimeInstant(1000));
 
- 		// now set the time this simulation should stop at 
- 		// let him work 1500 Minutes
- 		experiment.stop(new TimeInstant(1500));
- 		experiment.setShowProgressBar(false);
+     		// now set the time this simulation should stop at 
+     		// let him work 1500 Minutes
+     		experiment.stop(new TimeInstant(1500));
+     		experiment.setShowProgressBar(false);
 
- 		// start the Experiment with start time 0.0
- 		experiment.start();
+     		// start the Experiment with start time 0.0
+     		experiment.start();
 
- 		// --> now the simulation is running until it reaches its ending criteria
- 		// ...
- 		// ...
- 		// <-- after reaching ending criteria, the main thread returns here
- 		System.out.println(m.totalTravelDistance);
- 		// print the report about the already existing reporters into the report file
- 		experiment.report();
+     		// --> now the simulation is running until it reaches its ending criteria
+     		// ...
+     		// ...
+     		// <-- after reaching ending criteria, the main thread returns here
+//     		System.out.println(m.totalTravelDistance);
+//     		System.out.println(m.finishedTask);
+     		avgWaitingTime.add(m.waitTimeHistogram.getMean());
+     		maxWaitingTime.add(m.waitTimeHistogram.getMaximum());
+     		distance.add(m.totalTravelDistance);
+     		tasks.add(m.finishedTask);
+     		
+     		// print the report about the already existing reporters into the report file
+     		experiment.report();
 
- 		// stop all threads still alive and close all output files
- 		experiment.finish();
+     		// stop all threads still alive and close all output files
+     		experiment.finish();
+        }
+        
+        System.out.println(avgWaitingTime.stream().map(Object::toString)
+                .collect(Collectors.joining(", ")));
+        System.out.println(maxWaitingTime.stream().map(Object::toString)
+                .collect(Collectors.joining(", ")));
+        System.out.println(distance.stream().map(Object::toString)
+                .collect(Collectors.joining(", ")));
 	}
 
 }
