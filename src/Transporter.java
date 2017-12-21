@@ -46,6 +46,7 @@ public class Transporter extends SimProcess{
 			// 去完成任务
 			if (task != null) {
 				startTime = presentTime();
+				sendTraceNote(getName() + " 开始前往 " + task.getName()); 
 				System.out.println(getName() + " 开始前往 " + task.getName()+ " " + presentTime() + " " + x + " " + y);
 				driveToStation();
 				// 被抢占，更换任务
@@ -53,12 +54,15 @@ public class Transporter extends SimProcess{
 					continue;
 				}
 				
+				sendTraceNote(getName() + " 到达 " + task.getName());
 				System.out.println(getName() + " 到达 " + task.getName()+ " " + presentTime() + " " + x + " " + y);
 				
 				replenish();
 				//换件成功
 				task.endWait();
 				task.activate();
+				
+				sendTraceNote(getName() + " 给机床 " + task.getName() + " 换件成功 ");
 				System.out.println(task.getName() + " 换件成功 " +
 					presentTime());
 				// 完成任务，小车空闲
@@ -70,7 +74,7 @@ public class Transporter extends SimProcess{
 			// 等待调度
 			else {
 				myModel.idleTransporters.insert(this);
-				tc.activateAfter(this);
+				tc.activate();
 				passivate();
 			}
 		}

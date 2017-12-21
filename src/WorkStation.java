@@ -35,9 +35,12 @@ public class WorkStation extends SimProcess{
 			myModel.finishedTask++;
 			priority = false;
 			// 开始加工
-			hold(new TimeSpan(getProcessingTime()));	
+			sendTraceNote(getName() + "开始加工");
+			
+			hold(new TimeSpan(getProcessingTime()));
 			myModel.idleStations.insert(this);
 			startWait = presentTime();
+			sendTraceNote(getName() + "需要换件");
 			System.out.println(getName() + "需要换件 " + presentTime());
 			tc.activate();
 			// 等待车辆通知换件成功
@@ -46,7 +49,7 @@ public class WorkStation extends SimProcess{
 	}
 	
 	public double getProcessingTime() {
-		ContDistUniform processingTime = new ContDistUniform(myModel, "processingTimeStream", 5.0, 15.0, true, false);
+		ContDistUniform processingTime = new ContDistUniform(myModel, "processingTimeStream", 15.0, 15.0, true, false);
 		return processingTime.sample();
 	}
 	

@@ -23,7 +23,7 @@ public class SAWM_Transport_Strategy  extends ModelComponent implements Transpor
 	private Map<Transporter, double[]> m;
 	
 	public SAWM_Transport_Strategy(Model owner) {
-		super(owner, "NVFTransportStrategy");
+		super(owner, "SAWMTransportStrategy");
 		myModel = (TransporterModel) owner;
 	}
 
@@ -104,7 +104,7 @@ public class SAWM_Transport_Strategy  extends ModelComponent implements Transpor
 		if (Double.isNaN(waitTime)) {
 			waitTime = 0;
 		}
-		
+	
 		tj.score = 0.8 * dis + 0.2 * waitTime;
 		System.out.println(dis);
 		System.out.println(waitTime);

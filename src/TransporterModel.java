@@ -1,3 +1,6 @@
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -92,20 +95,22 @@ public class TransporterModel extends Model implements Parameterizable{
         
         Map<String, Class> strategy_map = new LinkedHashMap<>();
         strategy_map.put("FIFO", Class.forName("FIFO_Transport_Strategy"));
-        strategy_map.put("NVF", Class.forName("NVF_Transport_Strategy"));
+//        strategy_map.put("NVF", Class.forName("NVF_Transport_Strategy"));
         strategy_map.put("NVFTP", Class.forName("NVFTP_Transport_Strategy"));
-        strategy_map.put("STD", Class.forName("STD_Transport_Strategy"));
-        strategy_map.put("STDP", Class.forName("STDP_Transport_Strategy"));
+//        strategy_map.put("STD", Class.forName("STD_Transport_Strategy"));
+//        strategy_map.put("STDP", Class.forName("STDP_Transport_Strategy"));
         strategy_map.put("STDPTP", Class.forName("STDPTP_Transport_Strategy"));
-        strategy_map.put("SAWM", Class.forName("SAWM_Transport_Strategy"));
-        strategy_map.put("SAWMP", Class.forName("SAWMP_Transport_Strategy"));
+//        strategy_map.put("SAWM", Class.forName("SAWM_Transport_Strategy"));
+//        strategy_map.put("SAWMP", Class.forName("SAWMP_Transport_Strategy"));
+//        strategy_map.put("SAWMZ", Class.forName("SAWM_Zscore_Transport_Strategy"));
         
+        List<String> strategies = new ArrayList<>();
         List<Double> avgWaitingTime = new ArrayList<>();
         List<Double> maxWaitingTime = new ArrayList<>();
         List<Double> distance = new ArrayList<>();
         List<Integer> tasks = new ArrayList<>();
         		
-        
+        String variables = null;
         for (String key : strategy_map.keySet()) {
         	Experiment.setReferenceUnit(java.util.concurrent.TimeUnit.SECONDS);
         	Experiment experiment = new Experiment("Transporter Model");
@@ -134,6 +139,7 @@ public class TransporterModel extends Model implements Parameterizable{
      		// <-- after reaching ending criteria, the main thread returns here
 //     		System.out.println(m.totalTravelDistance);
 //     		System.out.println(m.finishedTask);
+     		strategies.add(key);
      		avgWaitingTime.add(m.waitTimeHistogram.getMean());
      		maxWaitingTime.add(m.waitTimeHistogram.getMaximum());
      		distance.add(m.totalTravelDistance);
@@ -144,14 +150,49 @@ public class TransporterModel extends Model implements Parameterizable{
 
      		// stop all threads still alive and close all output files
      		experiment.finish();
+     		
+     		variables = "V" + m.transporters.size() + "S" + m.stations.size() +   "load_" + 
+					(int)m.getLoadingTime() + "process_" + (int)m.stations.get(0).getProcessingTime();
         }
         
         System.out.println(avgWaitingTime.stream().map(Object::toString)
-                .collect(Collectors.joining(", ")));
+                .collect(Collectors.joining(" ")));
         System.out.println(maxWaitingTime.stream().map(Object::toString)
-                .collect(Collectors.joining(", ")));
+                .collect(Collectors.joining(" ")));
         System.out.println(distance.stream().map(Object::toString)
-                .collect(Collectors.joining(", ")));
+                .collect(Collectors.joining(" ")));
+        System.out.println(tasks.stream().map(Object::toString)
+                .collect(Collectors.joining(" ")));
+        
+        
+        // 调用Python画图程序
+        String[] command = new String[] {"py", "plot.py", String.join(" ", strategies),
+        		avgWaitingTime.stream().map(Object::toString).collect(Collectors.joining(" ")),
+        		maxWaitingTime.stream().map(Object::toString).collect(Collectors.joining(" ")),
+        		distance.stream().map(Object::toString).collect(Collectors.joining(" ")),
+        		tasks.stream().map(Object::toString).collect(Collectors.joining(" ")),
+        		variables};
+        
+        try {
+			Process pr = Runtime.getRuntime().exec(command);
+			
+			// 打印输出
+			BufferedReader in = new BufferedReader(new InputStreamReader(pr.getErrorStream()));
+            String line;
+            while ((line = in.readLine()) != null) {
+                System.out.println(line);
+            }
+            in.close();
+            
+            try {
+				pr.waitFor();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 }
