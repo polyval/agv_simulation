@@ -5,6 +5,7 @@ import desmoj.core.simulator.ProcessQueue;
 public class NVFTP_Transport_Strategy  extends ModelComponent implements TransportStrategy {
 	
 	private TransporterModel myModel;
+	private double threshold = 40.6;
 	
 	public NVFTP_Transport_Strategy(Model owner) {
 		super(owner, "NVFTransportStrategy"); // make a ModelComponent
@@ -21,7 +22,7 @@ public class NVFTP_Transport_Strategy  extends ModelComponent implements Transpo
 		
 		// while there's a job and a transporter
 		while ((t != null) && (j != null)) {
-			if (j.getCurWaitTime() > 63) {
+			if (j.getCurWaitTime() > threshold) {
 				Transporter k;
 				for (int i = 1; i < transporters.size(); i++) {
 					if ((k = (Transporter) transporters.get(i)).getDistance(j) < t.getDistance(j)) {

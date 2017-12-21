@@ -1,6 +1,7 @@
 *.html
 .classpath
 .project
+*.png
 
 /bin
 /.settings
