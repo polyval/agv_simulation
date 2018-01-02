@@ -16,6 +16,7 @@ public class WorkStation extends SimProcess{
 	private TransporterModel myModel;
 	private TransportControl tc;
 	
+	private ContDistUniform processingTime;
 	private TimeInstant startWait = new TimeInstant(0.0);
 	private TimeInstant endWait;
 	
@@ -26,6 +27,7 @@ public class WorkStation extends SimProcess{
 		this.tc = tc;
 		this.x = x;
 		this.y = y;
+		processingTime = new ContDistUniform(myModel, "processingTimeStream", 15.0, 15.0, true, false);
 	}
 
 	@Override
@@ -49,7 +51,6 @@ public class WorkStation extends SimProcess{
 	}
 	
 	public double getProcessingTime() {
-		ContDistUniform processingTime = new ContDistUniform(myModel, "processingTimeStream", 15.0, 15.0, true, false);
 		return processingTime.sample();
 	}
 	
