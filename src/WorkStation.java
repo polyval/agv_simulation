@@ -12,6 +12,7 @@ public class WorkStation extends SimProcess{
 	protected double x;
 	protected double y;
 	protected boolean priority = false;
+	protected TimeInstant nextJobTime = new TimeInstant(0.0);
 
 	private TransporterModel myModel;
 	private TransportControl tc;
@@ -27,7 +28,7 @@ public class WorkStation extends SimProcess{
 		this.tc = tc;
 		this.x = x;
 		this.y = y;
-		processingTime = new ContDistUniform(myModel, "processingTimeStream", 15.0, 15.0, true, false);
+		processingTime = new ContDistUniform(myModel, "processingTimeStream", 5.0, 5.0, true, false);
 	}
 
 	@Override
@@ -39,7 +40,9 @@ public class WorkStation extends SimProcess{
 			// 开始加工
 			sendTraceNote(getName() + "开始加工");
 			
-			hold(new TimeSpan(getProcessingTime()));
+			TimeSpan processTime = new TimeSpan(getProcessingTime());
+			nextJobTime = TimeOperations.add(presentTime(), processTime);
+			hold(processTime);
 			myModel.idleStations.insert(this);
 			startWait = presentTime();
 			sendTraceNote(getName() + "需要换件");

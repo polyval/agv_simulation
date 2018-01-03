@@ -1,4 +1,8 @@
+import java.util.LinkedList;
+import java.util.List;
+
 import co.paralleluniverse.fibers.SuspendExecution;
+import desmoj.core.exception.InterruptException;
 import desmoj.core.simulator.Model;
 import desmoj.core.simulator.SimProcess;
 import desmoj.core.simulator.TimeInstant;
@@ -9,7 +13,7 @@ public class Transporter extends SimProcess{
 	
 	protected double x;
 	protected double y;
-	private double speed;
+	protected double speed;
 	
 	private int capacity;
 	private int raw;
@@ -17,6 +21,7 @@ public class Transporter extends SimProcess{
 	protected State state = State.IDLE;
 	
 	protected WorkStation task = null;
+	protected List<WorkStation> taskSequence = new LinkedList<>();
 	private TransporterModel myModel;
 	private TransportControl tc;
 	
@@ -56,7 +61,9 @@ public class Transporter extends SimProcess{
 				
 				sendTraceNote(getName() + " 到达 " + task.getName());
 				System.out.println(getName() + " 到达 " + task.getName()+ " " + presentTime() + " " + x + " " + y);
-				
+				// 看是否需要等待机床加工完成
+				waitStation();
+				// 开始换件
 				replenish();
 				//换件成功
 				task.endWait();
@@ -66,6 +73,7 @@ public class Transporter extends SimProcess{
 				System.out.println(task.getName() + " 换件成功 " +
 					presentTime());
 				// 完成任务，小车空闲
+				removeFromSequence();
 				task = null;
 				if (raw == capacity || processed == capacity) {
 					reload();
@@ -77,6 +85,27 @@ public class Transporter extends SimProcess{
 				tc.activate();
 				passivate();
 			}
+		}
+	}
+	
+	public void waitStation() {
+		if (this.task == null || 
+				TimeInstant.isBefore(this.task.nextJobTime, presentTime())) {
+			return;
+		}
+		
+		state = State.EXECUTING;
+		try {
+			hold(this.task.nextJobTime);
+			sendTraceNote(getName() + " 等待机床 " + task.getName() + " 加工 ");
+		} catch (InterruptException | SuspendExecution e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void removeFromSequence() {
+		if (taskSequence.contains(task)) {
+			taskSequence.remove(task);
 		}
 	}
 	

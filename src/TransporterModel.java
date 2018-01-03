@@ -96,13 +96,16 @@ public class TransporterModel extends Model implements Parameterizable{
         Map<String, Class> strategy_map = new LinkedHashMap<>();
         strategy_map.put("FIFO", Class.forName("FIFO_Transport_Strategy"));
 //        strategy_map.put("NVF", Class.forName("NVF_Transport_Strategy"));
-        strategy_map.put("NVFTP", Class.forName("NVFTP_Transport_Strategy"));
+//        strategy_map.put("NVFTP", Class.forName("NVFTP_Transport_Strategy"));
 //        strategy_map.put("STD", Class.forName("STD_Transport_Strategy"));
 //        strategy_map.put("STDP", Class.forName("STDP_Transport_Strategy"));
         strategy_map.put("STDPTP", Class.forName("STDPTP_Transport_Strategy"));
 //        strategy_map.put("SAWM", Class.forName("SAWM_Transport_Strategy"));
+//        strategy_map.put("SAWM1", Class.forName("SAWM_Transport_Strategy2"));
 //        strategy_map.put("SAWMP", Class.forName("SAWMP_Transport_Strategy"));
 //        strategy_map.put("SAWMZ", Class.forName("SAWM_Zscore_Transport_Strategy"));
+//        strategy_map.put("DSAWM", Class.forName("DSAWM_Transport_Strategy"));
+        strategy_map.put("GRASP", Class.forName("GRASP_Transport_Strategy"));
         
         List<String> strategies = new ArrayList<>();
         List<Double> avgWaitingTime = new ArrayList<>();
