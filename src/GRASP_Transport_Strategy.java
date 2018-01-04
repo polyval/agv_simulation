@@ -1,7 +1,9 @@
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import desmoj.core.simulator.Model;
@@ -15,6 +17,7 @@ public class GRASP_Transport_Strategy extends ModelComponent implements
 	private TransporterModel myModel;
 	private double curTime;
 	private Random random = new Random();
+	private Map<Transporter, List<WorkStation>> results = new HashMap<>();
 	
 	public GRASP_Transport_Strategy(Model owner) {
 
@@ -27,7 +30,7 @@ public class GRASP_Transport_Strategy extends ModelComponent implements
 	public void schedule(ProcessQueue transporters, ProcessQueue stations) {
 		boolean reschedule = false;
 		for (Transporter t : myModel.transporters) {
-			if (t.state != Transporter.State.UNAVAILABLE && t.taskSequence.size() <= 0) {
+			if (t.state != Transporter.State.UNAVAILABLE && t.taskSequence.size() <= 3) {
 				reschedule = true;
 				break;
 			}
@@ -39,7 +42,7 @@ public class GRASP_Transport_Strategy extends ModelComponent implements
 		
 		for (Transporter t : myModel.transporters) {
 			System.out.println(t.taskSequence);
-			if (t.state == Transporter.State.IDLE) {
+			if (t.state == Transporter.State.IDLE && !t.taskSequence.isEmpty()) {
 				t.task = t.taskSequence.get(0);
 				t.state = Transporter.State.MOVING;
 				t.activate();
@@ -50,18 +53,58 @@ public class GRASP_Transport_Strategy extends ModelComponent implements
 	
 	public void scheduleAll(List<Transporter> transporters, List<WorkStation> stations) {
 		curTime = presentTime().getTimeAsDouble();
-		List<WorkStation> candidates = stations; 
+		
 		List<Transporter> vehicles = (List<Transporter>) transporters;
 		updateVehicle(vehicles);
-		int rclLength = 3 * vehicles.size();
 		
-		while (!candidates.isEmpty()) {
-			List<Element> candidateElements = getCandidateElements(candidates, vehicles);
-			Element e = getRandomElement(candidateElements, rclLength);
-			e.t.taskSequence.add(e.index, e.s);
-			candidates.remove(e.s);
+		int rclLength = 5 * vehicles.size();
+ 		double totalCost = Double.MAX_VALUE;
+ 		Map<Transporter, List<WorkStation>> finalResults = null;
+ 		
+ 		int i = 0;
+ 		while (i < 1000) {
+ 			init(vehicles);
+ 			List<WorkStation> candidates = new LinkedList<>(stations); 
+ 			
+ 			while (!candidates.isEmpty()) {
+ 				List<Element> candidateElements = getCandidateElements(candidates, vehicles);
+ 				Element e = getRandomElement(candidateElements, rclLength);
+ 				results.get(e.t).add(e.index, e.s);
+ 				candidates.remove(e.s);
+ 			}
+ 			
+ 			double curCost = getTotalCost(vehicles);
+ 			if (curCost < totalCost) {
+ 				totalCost = curCost;
+ 				finalResults = new HashMap<>(results);
+ 			}
+ 			i++;
+ 		}
+		
+ 		results = finalResults;
+		assign(vehicles);
+	}
+	
+	
+	private double getTotalCost(List<Transporter> vehicles) {
+		double cost = 0;
+		for (Transporter t : vehicles) {
+			cost += evaluate(t, results.get(t));
 		}
-		
+		return cost;
+	}
+	
+	private void assign(List<Transporter> vehicles) {
+		for (Transporter t : vehicles) {
+			t.taskSequence = results.get(t);
+		}
+	}
+	
+	private void init(List<Transporter> vehicles) {
+		results.clear();
+		for (Transporter t : vehicles) {
+			results.put(t, new LinkedList<WorkStation>());
+		}
 	}
 	
 	public List<Transporter> getScheduleableTransporter() {
@@ -161,7 +204,7 @@ public class GRASP_Transport_Strategy extends ModelComponent implements
 	}
 	
 	public Element getBestInsertion(WorkStation station, Transporter vehicle) {
-		List<WorkStation> taskSequence = new LinkedList<>(vehicle.taskSequence);
+		List<WorkStation> taskSequence = new LinkedList<>(results.get(vehicle));
 		
 		int bestInsertionIndex = 0;
 		double cost = Integer.MAX_VALUE;
