@@ -25,7 +25,7 @@ public class Transporter extends SimProcess{
 	private TransporterModel myModel;
 	private TransportControl tc;
 	
-	private TimeInstant startTime;
+	protected TimeInstant startTime;
 	protected boolean preempted = false;
 	private double travelDistance = 0.0;
 	
@@ -67,7 +67,7 @@ public class Transporter extends SimProcess{
 				replenish();
 				//换件成功
 				task.endWait();
-				task.activate();
+				task.activateAfter(this);
 				
 				sendTraceNote(getName() + " 给机床 " + task.getName() + " 换件成功 ");
 				System.out.println(task.getName() + " 换件成功 " +
@@ -150,6 +150,9 @@ public class Transporter extends SimProcess{
 		double dis = Helper.computeDist(x, y, myModel.storage_position[0], myModel.storage_position[1]);
 		travelDistance += dis;
 		myModel.totalTravelDistance += dis;
+		if (Double.isNaN(myModel.totalTravelDistance)) {
+			System.out.println(presentTime() + "error");
+		}
 		state = State.IDLE;
 	}
 	
@@ -171,6 +174,9 @@ public class Transporter extends SimProcess{
 		setPosition(task.x, task.y);
 		travelDistance += distance;
 		myModel.totalTravelDistance += distance;
+		if (Double.isNaN(myModel.totalTravelDistance)) {
+			System.out.println(presentTime() + "error");
+		}
 	}
 	
 	private void replenish() throws SuspendExecution{
