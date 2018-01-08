@@ -62,9 +62,9 @@ public class TransporterModel extends Model implements Parameterizable{
 			idleStations.insert(s);
 		}
 		
-		int[][] vehicle_positions = {{1, 1}, {4, 2}};
+		int[][] vehicle_positions = {{1, 1}, {4, 2}, {6, 4}};
 		for (int i = 0; i < vehicle_positions.length; i++) {
-			Transporter t = new Transporter(this, "小车", true, 10, tc, vehicle_positions[i][0], vehicle_positions[i][1], 1);
+			Transporter t = new Transporter(this, "小车", true, 10, tc, vehicle_positions[i][0], vehicle_positions[i][1], 0.5);
 			transporters.insert(t);
 			idleTransporters.insert(t);
 		}
@@ -88,17 +88,17 @@ public class TransporterModel extends Model implements Parameterizable{
 	}
 	
 	public double getLoadingTime() {
-		return 10;
+		return 5;
 	}
 	
 	public static void main(String[] args) throws ClassNotFoundException, NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         
         Map<String, Class> strategy_map = new LinkedHashMap<>();
-        strategy_map.put("FIFO", Class.forName("FIFO_Transport_Strategy"));
+//        strategy_map.put("FIFO", Class.forName("FIFO_Transport_Strategy"));
 //        strategy_map.put("NVF", Class.forName("NVF_Transport_Strategy"));
 //        strategy_map.put("NVFTP", Class.forName("NVFTP_Transport_Strategy"));
 //        strategy_map.put("STD", Class.forName("STD_Transport_Strategy"));
-//        strategy_map.put("STDP", Class.forName("STDP_Transport_Strategy"));
+        strategy_map.put("STDP", Class.forName("STDP_Transport_Strategy"));
         strategy_map.put("STDPTP", Class.forName("STDPTP_Transport_Strategy"));
 //        strategy_map.put("SAWM", Class.forName("SAWM_Transport_Strategy"));
 //        strategy_map.put("SAWM1", Class.forName("SAWM_Transport_Strategy2"));

@@ -6,7 +6,7 @@ import desmoj.core.simulator.TimeSpan;
 public class STDPTP_Transport_Strategy  extends ModelComponent implements TransportStrategy {
 	
 	private TransporterModel myModel;
-	private double threshold = 74;
+	private double threshold = 49;
 	
 	public STDPTP_Transport_Strategy(Model owner) {
 		super(owner, "NVFTransportStrategy"); // make a ModelComponent

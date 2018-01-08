@@ -10,7 +10,13 @@ import desmoj.core.simulator.Model;
 import desmoj.core.simulator.ModelComponent;
 import desmoj.core.simulator.ProcessQueue;
 
-
+// 每一次计算得到的解优化了也不一定代表最终的整体结果会更优
+// 由于具有随机性，应该比较多次运行的平均结果
+// 重调度越频繁，效果越好
+// 结果好的时候: <5 reschedule
+// 局部搜索可以改善性能，但是计算时间更长
+// 运行时间越长，相对于指派规则性能越好
+// 降低速度或者增大机床距离可以放大最终结果的比较效果
 public class GRASP_Transport_Strategy extends ModelComponent implements
 		TransportStrategy {
 	
@@ -18,6 +24,7 @@ public class GRASP_Transport_Strategy extends ModelComponent implements
 	private double curTime;
 	private Random random = new Random();
 	private Map<Transporter, List<WorkStation>> results = new HashMap<>();
+	private LocalSearch localSearch = new LocalSearch();
 	
 	public GRASP_Transport_Strategy(Model owner) {
 
@@ -37,7 +44,9 @@ public class GRASP_Transport_Strategy extends ModelComponent implements
 		}
 	
 		if (reschedule) {
+			long startTime = System.nanoTime();
 			scheduleAll(getScheduleableTransporter(), getSchedulableStation());
+			System.out.println("计算时间(ms)：" + (System.nanoTime() - startTime) / 1000000);
 		}
 		
 		for (Transporter t : myModel.transporters) {
@@ -45,6 +54,7 @@ public class GRASP_Transport_Strategy extends ModelComponent implements
 			if (t.state == Transporter.State.IDLE && !t.taskSequence.isEmpty()) {
 				t.task = t.taskSequence.get(0);
 				t.state = Transporter.State.MOVING;
+				t.startTime = presentTime();
 				t.activate();
 			}
 		}
@@ -57,12 +67,12 @@ public class GRASP_Transport_Strategy extends ModelComponent implements
 		List<Transporter> vehicles = (List<Transporter>) transporters;
 		updateVehicle(vehicles);
 		
-		int rclLength = 5 * vehicles.size();
+		int rclLength = 3 * vehicles.size();
  		double totalCost = Double.MAX_VALUE;
  		Map<Transporter, List<WorkStation>> finalResults = null;
  		
  		int i = 0;
- 		while (i < 1000) {
+ 		while (i < 2000) {
  			init(vehicles);
  			List<WorkStation> candidates = new LinkedList<>(stations); 
  			
@@ -73,6 +83,10 @@ public class GRASP_Transport_Strategy extends ModelComponent implements
  				candidates.remove(e.s);
  			}
  			
+ 			for (Transporter v : vehicles) {
+ 				results.put(v, localSearch.heuristic(v, results.get(v)));
+ 			}
+// 			
  			double curCost = getTotalCost(vehicles);
  			if (curCost < totalCost) {
  				totalCost = curCost;

@@ -96,8 +96,8 @@ public class Transporter extends SimProcess{
 		
 		state = State.EXECUTING;
 		try {
-			hold(this.task.nextJobTime);
 			sendTraceNote(getName() + " 等待机床 " + task.getName() + " 加工 ");
+			hold(this.task.nextJobTime);
 		} catch (InterruptException | SuspendExecution e) {
 			e.printStackTrace();
 		}
@@ -121,6 +121,9 @@ public class Transporter extends SimProcess{
 	public double[] getEnRoutePosition() {
 		if (task != null) {
 			double dist = getEnRouteDis();
+			if (dist == 0) {
+				return new double[] {x, y};
+			}
 			double vx = (task.x - x) / getDistance(task);
 			double vy = (task.y - y) / getDistance(task);
 			return new double[] {x + dist * vx, y + dist * vy};
@@ -136,6 +139,9 @@ public class Transporter extends SimProcess{
 	
 	private double getEnRouteDis() {
 		double enRouteTime = TimeOperations.diff(startTime, presentTime()).getTimeAsDouble();
+		if (startTime.equals(presentTime())) {
+			return 0;
+		}
 		return enRouteTime * speed;
 	}
 	
