@@ -54,7 +54,8 @@ public class TransporterModel extends Model implements Parameterizable{
 	@Override
 	public void doInitialSchedules() {
 		int[][] station_positions = {{0, 0}, {2, 0}, {4, 0}, {6, 0}, {8, 0},
-									{0, 3}, {2, 3}, {4, 3}, {6, 3}, {8, 3}};
+									{0, 3}, {2, 3}, {4, 3}, {6, 3}, {8, 3},
+									{10,0},{12,0},{14,0},{16,0}, {10,3},{12,3},{14,3},{16,3}};
 
 		for (int i = 0; i < station_positions.length; i++) {
 			WorkStation s = new WorkStation(this, "机床", true, tc, station_positions[i][0], station_positions[i][1]);
@@ -62,9 +63,9 @@ public class TransporterModel extends Model implements Parameterizable{
 			idleStations.insert(s);
 		}
 		
-		int[][] vehicle_positions = {{1, 1}, {4, 2}, {6, 4}};
+		int[][] vehicle_positions = {{1, 1}, {4, 2}/**, {6, 2}, {8,2}**/};
 		for (int i = 0; i < vehicle_positions.length; i++) {
-			Transporter t = new Transporter(this, "小车", true, 10, tc, vehicle_positions[i][0], vehicle_positions[i][1], 0.5);
+			Transporter t = new Transporter(this, "小车", true, 10, tc, vehicle_positions[i][0], vehicle_positions[i][1], 1);
 			transporters.insert(t);
 			idleTransporters.insert(t);
 		}
@@ -88,18 +89,19 @@ public class TransporterModel extends Model implements Parameterizable{
 	}
 	
 	public double getLoadingTime() {
-		return 5;
+		return 15;
 	}
 	
 	public static void main(String[] args) throws ClassNotFoundException, NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         
         Map<String, Class> strategy_map = new LinkedHashMap<>();
-//        strategy_map.put("FIFO", Class.forName("FIFO_Transport_Strategy"));
+        strategy_map.put("FIFO", Class.forName("FIFO_Transport_Strategy"));
 //        strategy_map.put("NVF", Class.forName("NVF_Transport_Strategy"));
 //        strategy_map.put("NVFTP", Class.forName("NVFTP_Transport_Strategy"));
-//        strategy_map.put("STD", Class.forName("STD_Transport_Strategy"));
+        strategy_map.put("STD", Class.forName("STD_Transport_Strategy"));
         strategy_map.put("STDP", Class.forName("STDP_Transport_Strategy"));
-        strategy_map.put("STDPTP", Class.forName("STDPTP_Transport_Strategy"));
+//        strategy_map.put("STDPTP", Class.forName("STDPTP_Transport_Strategy"));
+        strategy_map.put("DSTDPTP", Class.forName("DSTDPTP_Transport_Strategy"));
 //        strategy_map.put("SAWM", Class.forName("SAWM_Transport_Strategy"));
 //        strategy_map.put("SAWM1", Class.forName("SAWM_Transport_Strategy2"));
 //        strategy_map.put("SAWMP", Class.forName("SAWMP_Transport_Strategy"));

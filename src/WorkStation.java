@@ -1,7 +1,9 @@
 import java.util.Random;
 
 import co.paralleluniverse.fibers.SuspendExecution;
+import desmoj.core.dist.ContDist;
 import desmoj.core.dist.ContDistExponential;
+import desmoj.core.dist.ContDistNormal;
 import desmoj.core.dist.ContDistUniform;
 import desmoj.core.simulator.Model;
 import desmoj.core.simulator.SimProcess;
@@ -20,7 +22,7 @@ public class WorkStation extends SimProcess{
 	private TransportControl tc;
 	
 	private Random random = new Random();
-	private ContDistUniform processingTime;
+	private ContDist processingTime;
 	private TimeInstant startWait = new TimeInstant(0.0);
 	private TimeInstant endWait;
 	
@@ -31,7 +33,7 @@ public class WorkStation extends SimProcess{
 		this.tc = tc;
 		this.x = x;
 		this.y = y;
-		processingTime = new ContDistUniform(myModel, "processingTimeStream", 30, 50, true, false);
+		processingTime = new ContDistNormal(myModel, "processingTimeStream", 30, 3, true, false);
 	}
 
 	@Override
@@ -57,7 +59,8 @@ public class WorkStation extends SimProcess{
 	}
 	
 	public double getProcessingTime() {
-		return 15 + random.nextInt(20);
+//		return 15 + random.nextInt(20);
+		return processingTime.sample();
 	}
 	
 	public void endWait() {

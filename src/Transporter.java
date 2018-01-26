@@ -96,7 +96,8 @@ public class Transporter extends SimProcess{
 		
 		state = State.EXECUTING;
 		try {
-			sendTraceNote(getName() + " 等待机床 " + task.getName() + " 加工 ");
+			System.out.println((getName() + " 等待机床 " + task.getName() + " 加工 "));
+			sendTraceNote((getName() + " 等待机床 " + task.getName() + " 加工 "));
 			hold(this.task.nextJobTime);
 		} catch (InterruptException | SuspendExecution e) {
 			e.printStackTrace();
