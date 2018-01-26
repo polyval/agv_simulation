@@ -37,10 +37,13 @@ public class GRASP_Transport_Strategy extends ModelComponent implements
 	public void schedule(ProcessQueue transporters, ProcessQueue stations) {
 		boolean reschedule = false;
 		for (Transporter t : myModel.transporters) {
-			if (t.state != Transporter.State.UNAVAILABLE && t.taskSequence.size() <= 3) {
+			if (t.state != Transporter.State.UNAVAILABLE && t.taskSequence.size() <= 5) {
 				reschedule = true;
 				break;
 			}
+		}
+		if (remainTasks() < 14) {
+			reschedule = true;
 		}
 	
 		if (reschedule) {
@@ -61,7 +64,20 @@ public class GRASP_Transport_Strategy extends ModelComponent implements
 		
 	}
 	
+	public int remainTasks() {
+		int res = 0;
+		for (Transporter t : myModel.transporters) {
+			if (t.state != Transporter.State.UNAVAILABLE) {
+				res += t.taskSequence.size();
+			}
+		}
+		return res;
+	}
+	
 	public void scheduleAll(List<Transporter> transporters, List<WorkStation> stations) {
+		if (transporters.size() == 0 || stations.size() == 0) {
+			return;
+		}
 		curTime = presentTime().getTimeAsDouble();
 		
 		List<Transporter> vehicles = (List<Transporter>) transporters;
@@ -72,7 +88,7 @@ public class GRASP_Transport_Strategy extends ModelComponent implements
  		Map<Transporter, List<WorkStation>> finalResults = null;
  		
  		int i = 0;
- 		while (i < 2000) {
+ 		while (i < 1000) {
  			init(vehicles);
  			List<WorkStation> candidates = new LinkedList<>(stations); 
  			
@@ -96,6 +112,7 @@ public class GRASP_Transport_Strategy extends ModelComponent implements
  		}
 		
  		results = finalResults;
+ 		System.out.println(results);
 		assign(vehicles);
 	}
 	
@@ -125,6 +142,7 @@ public class GRASP_Transport_Strategy extends ModelComponent implements
 		List<Transporter> vehicles = new ArrayList<>();
 		for (Transporter t : myModel.transporters) {
 			if (t.state == Transporter.State.UNAVAILABLE) {
+				t.taskSequence.clear();
 				continue;
 			}
 			vehicles.add(t);
