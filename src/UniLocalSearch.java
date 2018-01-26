@@ -2,31 +2,23 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-public class LocalSearch {
-
-	public LocalSearch() {
+public class UniLocalSearch {
+	private int processTime = 0;
+	
+	public UniLocalSearch(int processTime) {
+		this.processTime = processTime;
 	}
 	
-	public void schedule(Transporter vehicle, List<WorkStation> stations) {
-		if (stations == null || stations.size() <= 1) {
-			return;
-		}
-		if (stations.size() > 10) {
-			stations = stations.subList(0, 10);
-		}
-		vehicle.taskSequence = heuristic(vehicle, stations);
-	}
-	
-	List<WorkStation> heuristic(Transporter vehicle, List<WorkStation> stations) {
+	List<WorkStation> search(Transporter vehicle, List<WorkStation> stations) {
 		stations = combinedReinsert(vehicle, stations);
-		double cost = computeCost(vehicle, stations);
+		double cost = Helper.computeCost(vehicle, stations, processTime);
 		for (int i = 0; i < 3; i++) {
 			List<WorkStation> shufflestations = new LinkedList<WorkStation>(stations);
 			Collections.shuffle(shufflestations);
 			shufflestations = combinedReinsert(vehicle, shufflestations);
-			double newCost = computeCost(vehicle, shufflestations);
+			double newCost = Helper.computeCost(vehicle, shufflestations, processTime);
 			if (newCost < cost) {
-				System.out.println("优化： " + (cost - newCost));
+//				System.out.println("优化： " + (cost - newCost));
 				cost = newCost;
 				stations = shufflestations;
 			}
@@ -64,7 +56,7 @@ public class LocalSearch {
 				List<WorkStation> joinedstations = new LinkedList<WorkStation>(leftstations);
 				joinedstations.addAll(rightstations);
 				// If a cost reduction is found.
-				if (computeCost(vehicle, joinedstations) < computeCost(vehicle, stations)) {
+				if (Helper.computeCost(vehicle, joinedstations, processTime) < Helper.computeCost(vehicle, stations, processTime)) {
 					stations = joinedstations;
 					inserted = true;
 					break;
@@ -99,7 +91,7 @@ public class LocalSearch {
 				List<WorkStation> joinedstations = new LinkedList<WorkStation>(leftstations);
 				joinedstations.addAll(rightstations);
 				// If a cost reduction is found.
-				if (computeCost(vehicle, joinedstations) < computeCost(vehicle, stations)) {
+				if (Helper.computeCost(vehicle, joinedstations, processTime) < Helper.computeCost(vehicle, stations, processTime)) {
 					stations = joinedstations;
 					inserted = true;
 					break;
@@ -119,11 +111,11 @@ public class LocalSearch {
 			return stations;
 		}
 		List<WorkStation> swapedstations = new LinkedList<WorkStation>(stations);
-		double cost = computeCost(vehicle, stations);
+		double cost = Helper.computeCost(vehicle, stations, processTime);
 		for (int i = 0; i < stations.size() - 2; i++) {
 			Collections.swap(swapedstations, i, i+1);
 			List<WorkStation> newstations = reinsertBackwards(vehicle, swapedstations);
-			double newCost = computeCost(vehicle, newstations);
+			double newCost = Helper.computeCost(vehicle, newstations, processTime);
 			if (newCost < cost) {
 				cost = newCost;
 				stations = newstations;
@@ -132,31 +124,4 @@ public class LocalSearch {
 		}
 		return stations;
 	}	
-	
-	private double computeCost(Transporter vehicle, List<WorkStation> stations) {
-		double posX = vehicle.x;
-		double posY = vehicle.y;
-		
-		double cost = 0;
-		double time = vehicle.presentTime().getTimeAsDouble();
-		for (WorkStation s : stations) {
-			double dis = Helper.computeDist(posX, posY, s.x, s.y);
-			double jobTime = s.nextJobTime.getTimeAsDouble();
-			// 到达任务的时间
-			time += dis / vehicle.speed;
-			// 到达时任务是否已经开始
-			if (jobTime > time) {
-				time = jobTime;
-			}
-			else {
-				cost += (time - jobTime); 
-			}
-			// 换件的时间
-			time += 5;
-			posX = s.x;
-			posY = s.y;
-		}
-		
-		return cost;
-	}
 }

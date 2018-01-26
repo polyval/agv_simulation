@@ -63,7 +63,7 @@ public class TransporterModel extends Model implements Parameterizable{
 			idleStations.insert(s);
 		}
 		
-		int[][] vehicle_positions = {{1, 1}, {4, 2}/**, {6, 2}, {8,2}**/};
+		int[][] vehicle_positions = {{1, 1}, {4, 2}, {6, 2}/**, {8,2}**/};
 		for (int i = 0; i < vehicle_positions.length; i++) {
 			Transporter t = new Transporter(this, "小车", true, 10, tc, vehicle_positions[i][0], vehicle_positions[i][1], 1);
 			transporters.insert(t);
@@ -88,7 +88,7 @@ public class TransporterModel extends Model implements Parameterizable{
 		this.ts = ts;
 	}
 	
-	public double getLoadingTime() {
+	public int getLoadingTime() {
 		return 15;
 	}
 	
@@ -171,33 +171,33 @@ public class TransporterModel extends Model implements Parameterizable{
         
         
         // 调用Python画图程序
-        String[] command = new String[] {"py", "plot.py", String.join(" ", strategies),
-        		avgWaitingTime.stream().map(Object::toString).collect(Collectors.joining(" ")),
-        		maxWaitingTime.stream().map(Object::toString).collect(Collectors.joining(" ")),
-        		distance.stream().map(Object::toString).collect(Collectors.joining(" ")),
-        		tasks.stream().map(Object::toString).collect(Collectors.joining(" ")),
-        		variables};
-        
-        try {
-			Process pr = Runtime.getRuntime().exec(command);
-			
-			// 打印输出
-			BufferedReader in = new BufferedReader(new InputStreamReader(pr.getErrorStream()));
-            String line;
-            while ((line = in.readLine()) != null) {
-                System.out.println(line);
-            }
-            in.close();
-            
-            try {
-				pr.waitFor();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-			
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+//        String[] command = new String[] {"py", "plot.py", String.join(" ", strategies),
+//        		avgWaitingTime.stream().map(Object::toString).collect(Collectors.joining(" ")),
+//        		maxWaitingTime.stream().map(Object::toString).collect(Collectors.joining(" ")),
+//        		distance.stream().map(Object::toString).collect(Collectors.joining(" ")),
+//        		tasks.stream().map(Object::toString).collect(Collectors.joining(" ")),
+//        		variables};
+//        
+//        try {
+//			Process pr = Runtime.getRuntime().exec(command);
+//			
+//			// 打印输出
+//			BufferedReader in = new BufferedReader(new InputStreamReader(pr.getErrorStream()));
+//            String line;
+//            while ((line = in.readLine()) != null) {
+//                System.out.println(line);
+//            }
+//            in.close();
+//            
+//            try {
+//				pr.waitFor();
+//			} catch (InterruptedException e) {
+//				e.printStackTrace();
+//			}
+//			
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
 	}
 
 }

@@ -24,12 +24,13 @@ public class GRASP_Transport_Strategy extends ModelComponent implements
 	private double curTime;
 	private Random random = new Random();
 	private Map<Transporter, List<WorkStation>> results = new HashMap<>();
-	private LocalSearch localSearch = new LocalSearch();
+	private UniLocalSearch localSearch;
 	
 	public GRASP_Transport_Strategy(Model owner) {
 
 		super(owner, "GRASPTransportStrategy"); // make a ModelComponent
 		myModel = (TransporterModel) owner;
+		localSearch = new UniLocalSearch(myModel.getLoadingTime());
 	}
 
 
@@ -42,7 +43,7 @@ public class GRASP_Transport_Strategy extends ModelComponent implements
 				break;
 			}
 		}
-		if (remainTasks() < 14) {
+		if (remainTasks() < 12) {
 			reschedule = true;
 		}
 	
@@ -100,7 +101,7 @@ public class GRASP_Transport_Strategy extends ModelComponent implements
  			}
  			
  			for (Transporter v : vehicles) {
- 				results.put(v, localSearch.heuristic(v, results.get(v)));
+ 				results.put(v, localSearch.search(v, results.get(v)));
  			}
 // 			
  			double curCost = getTotalCost(vehicles);
@@ -209,30 +210,7 @@ public class GRASP_Transport_Strategy extends ModelComponent implements
 	}
 	
 	public double evaluate(Transporter vehicle, List<WorkStation> stations) {
-		double posX = vehicle.x;
-		double posY = vehicle.y;
-		
-		double cost = 0;
-		double time = curTime;
-		for (WorkStation s : stations) {
-			double dis = Helper.computeDist(posX, posY, s.x, s.y);
-			double jobTime = s.nextJobTime.getTimeAsDouble();
-			// 到达任务的时间
-			time += dis / vehicle.speed;
-			// 到达时任务是否已经开始
-			if (jobTime > time) {
-				time = jobTime;
-			}
-			else {
-				cost += (time - jobTime); 
-			}
-			// 换件的时间
-			time += 5;
-			posX = s.x;
-			posY = s.y;
-		}
-		
-		return cost;
+		return Helper.computeCost(vehicle, stations, myModel.getLoadingTime());
 	}
 	
 	public Element getBestInsertion(WorkStation station, Transporter vehicle) {
