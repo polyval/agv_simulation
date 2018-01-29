@@ -12,6 +12,16 @@ public class Helper {
 		
 		double cost = 0;
 		double time = vehicle.presentTime().getTimeAsDouble();
+//		if (vehicle.state == Transporter.State.EXECUTING ||
+//				vehicle.state == Transporter.State.MOVING) {
+//			posX = vehicle.task.x;
+//			posY = vehicle.task.y;
+//			time += computeDist(vehicle.x, posX, vehicle.y, posY) / vehicle.speed;
+//			if (vehicle.task.nextJobTime.getTimeAsDouble() > time) {
+//				time = vehicle.task.nextJobTime.getTimeAsDouble();
+//			}
+//			time += processTime;
+//		}
 		for (WorkStation s : stations) {
 			double dis = computeDist(posX, posY, s.x, s.y);
 			double jobTime = s.nextJobTime.getTimeAsDouble();

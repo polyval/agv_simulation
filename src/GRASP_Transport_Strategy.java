@@ -24,13 +24,15 @@ public class GRASP_Transport_Strategy extends ModelComponent implements
 	private double curTime;
 	private Random random = new Random();
 	private Map<Transporter, List<WorkStation>> results = new HashMap<>();
-	private UniLocalSearch localSearch;
+	private InsertLocalSearch localSearch;
+	private UniLocalSearch search;
 	
 	public GRASP_Transport_Strategy(Model owner) {
 
 		super(owner, "GRASPTransportStrategy"); // make a ModelComponent
 		myModel = (TransporterModel) owner;
-		localSearch = new UniLocalSearch(myModel.getLoadingTime());
+		localSearch = new InsertLocalSearch(myModel.getLoadingTime());
+		search = new UniLocalSearch(myModel.getLoadingTime());
 	}
 
 
@@ -38,7 +40,7 @@ public class GRASP_Transport_Strategy extends ModelComponent implements
 	public void schedule(ProcessQueue transporters, ProcessQueue stations) {
 		boolean reschedule = false;
 		for (Transporter t : myModel.transporters) {
-			if (t.state != Transporter.State.UNAVAILABLE && t.taskSequence.size() <= 5) {
+			if (t.state != Transporter.State.UNAVAILABLE && t.taskSequence.size() <= 3) {
 				reschedule = true;
 				break;
 			}
@@ -99,11 +101,19 @@ public class GRASP_Transport_Strategy extends ModelComponent implements
  				results.get(e.t).add(e.index, e.s);
  				candidates.remove(e.s);
  			}
- 			
- 			for (Transporter v : vehicles) {
- 				results.put(v, localSearch.search(v, results.get(v)));
- 			}
 // 			
+// 			for (Transporter v : vehicles) {
+// 				results.put(v, search.search(v, results.get(v)));
+// 			}
+// 			
+// 			System.out.println("局部搜索" + results);
+ 			List<List<WorkStation>> s = new ArrayList<>();
+ 			for (Transporter v : vehicles) {
+ 				s.add(results.get(v));
+ 			}
+ 			localSearch.search(vehicles, s);
+// 			System.out.println("局部搜索后" + results);
+ 			
  			double curCost = getTotalCost(vehicles);
  			if (curCost < totalCost) {
  				totalCost = curCost;

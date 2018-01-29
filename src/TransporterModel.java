@@ -53,9 +53,9 @@ public class TransporterModel extends Model implements Parameterizable{
 	
 	@Override
 	public void doInitialSchedules() {
-		int[][] station_positions = {{0, 0}, {2, 0}, {4, 0}, {6, 0}, {8, 0},
-									{0, 3}, {2, 3}, {4, 3}, {6, 3}, {8, 3},
-									{10,0},{12,0},{14,0},{16,0}, {10,3},{12,3},{14,3},{16,3}};
+		int[][] station_positions = {{0, 0}, {0, 3},{2, 0}, {2, 3}, {4, 0}, {4, 3}, {6, 0},{6, 3}, {8, 0},
+									  {8, 3},{10,0},{10,3},{12,0},{12,3},{14,0},{14,3},{16,0}, {16,3},
+									/**{18,0},{20,0},{22,0},{24,0}, {18,3},{20,3},{22,3},{24,3}**/};
 
 		for (int i = 0; i < station_positions.length; i++) {
 			WorkStation s = new WorkStation(this, "机床", true, tc, station_positions[i][0], station_positions[i][1]);
@@ -63,7 +63,7 @@ public class TransporterModel extends Model implements Parameterizable{
 			idleStations.insert(s);
 		}
 		
-		int[][] vehicle_positions = {{1, 1}, {4, 2}, {6, 2}/**, {8,2}**/};
+		int[][] vehicle_positions = {{1, 1}, {4, 2}, {6, 2}, {8,2}/****/};
 		for (int i = 0; i < vehicle_positions.length; i++) {
 			Transporter t = new Transporter(this, "小车", true, 10, tc, vehicle_positions[i][0], vehicle_positions[i][1], 1);
 			transporters.insert(t);
@@ -79,7 +79,7 @@ public class TransporterModel extends Model implements Parameterizable{
 		stations = new ProcessQueue<>(this, "Station Queue", true, false);
 		idleStations = new ProcessQueue<>(this, "idle Station Queue", true, false);
 		tc = new TransportControl(this, "Dispatcher", true, ts);
-		storage_position = new double[] {10, 2};
+		storage_position = new double[] {18, 2};
 		
 		waitTimeHistogram = new Histogram(this, "等待时间", 0, 200, 25, true, false);
 	}
@@ -108,6 +108,7 @@ public class TransporterModel extends Model implements Parameterizable{
 //        strategy_map.put("SAWMZ", Class.forName("SAWM_Zscore_Transport_Strategy"));
 //        strategy_map.put("DSAWM", Class.forName("DSAWM_Transport_Strategy"));
         strategy_map.put("GRASP", Class.forName("GRASP_Transport_Strategy"));
+        strategy_map.put("Block_TSP", Class.forName("Block_TSP_Transport_Strategy"));
         
         List<String> strategies = new ArrayList<>();
         List<Double> avgWaitingTime = new ArrayList<>();
@@ -137,6 +138,7 @@ public class TransporterModel extends Model implements Parameterizable{
 
      		// start the Experiment with start time 0.0
      		experiment.start();
+
 
      		// --> now the simulation is running until it reaches its ending criteria
      		// ...
