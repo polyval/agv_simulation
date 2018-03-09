@@ -12,7 +12,7 @@ import desmoj.core.simulator.ProcessQueue;
 
 // 每一次计算得到的解优化了也不一定代表最终的整体结果会更优
 // 由于具有随机性，应该比较多次运行的平均结果
-// 重调度越频繁，效果越好
+// 重调度越频繁，效果越好,最大等待时间可能增大
 // 结果好的时候: <5 reschedule
 // 局部搜索可以改善性能，但是计算时间更长
 // 运行时间越长，相对于指派规则性能越好
@@ -39,13 +39,13 @@ public class GRASP_Transport_Strategy extends ModelComponent implements
 	@Override
 	public void schedule(ProcessQueue transporters, ProcessQueue stations) {
 		boolean reschedule = false;
-		for (Transporter t : myModel.transporters) {
-			if (t.state != Transporter.State.UNAVAILABLE && t.taskSequence.size() <= 3) {
-				reschedule = true;
-				break;
-			}
-		}
-		if (remainTasks() < 12) {
+//		for (Transporter t : myModel.transporters) {
+//			if (t.state != Transporter.State.UNAVAILABLE && t.taskSequence.size() <= 3) {
+//				reschedule = true;
+//				break;
+//			}
+//		}
+		if (remainTasks() < 17) {
 			reschedule = true;
 		}
 	
@@ -227,18 +227,20 @@ public class GRASP_Transport_Strategy extends ModelComponent implements
 		List<WorkStation> taskSequence = new LinkedList<>(results.get(vehicle));
 		
 		int bestInsertionIndex = 0;
-		double cost = Integer.MAX_VALUE;
+		double originCost = evaluate(vehicle, taskSequence);
+		double addedCost = Integer.MAX_VALUE;
 		for (int i = 0; i <= vehicle.taskSequence.size(); i++) {
 			double curCost;
-			taskSequence.add(0, station);
-			if ((curCost = evaluate(vehicle, taskSequence)) < cost) {
-				cost = curCost;
+			taskSequence.add(i, station);
+			curCost = evaluate(vehicle, taskSequence);
+			if ((curCost - originCost) < addedCost) {
+				addedCost = curCost - originCost;
 				bestInsertionIndex = i;
 			}
 			taskSequence.remove(i);
 		}
 		
-		return new Element(vehicle, station, bestInsertionIndex, cost);
+		return new Element(vehicle, station, bestInsertionIndex, addedCost);
 	}
 	
 	class Element implements Comparable<Element>{
